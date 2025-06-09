@@ -1,23 +1,17 @@
-# Step 1: Build the app
-FROM node:18 AS builder
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-
-# Step 2: Serve using Nginx
+# Use Nginx to serve the pre-built React app
 FROM nginx:alpine
 
-# Copy the built app from the builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Set working directory
+WORKDIR /usr/share/nginx/html
 
-# Optional: Replace default Nginx config (optional but recommended)
+# Copy the pre-built dist folder from Jenkins workspace into the Nginx web root
+COPY dist/ .
+
+# Replace the default Nginx config with your custom one
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port (optional; depends on your container orchestration)
+# Expose the HTTP port
 EXPOSE 80
 
+# Start Nginx in foreground mode
 CMD ["nginx", "-g", "daemon off;"]
